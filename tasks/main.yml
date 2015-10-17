@@ -1,0 +1,23 @@
+---
+- name: Stop postgresql service
+  service:
+      name: postgresql
+      state: stopped  
+
+- mame: Remove {{ pgbase_output_dir }}
+  file:
+      src: {{ pgbase_output_dir }}
+      state: absent 
+  
+- name: pg_basebackup from {{ pgbase_host }} to {{ pgbase_output_dir }} 
+  command: sudo -u postgres pg_basebackup -h {{ pgbase_host }} -D {{ pgbase_output_dir }} -U {{ pgbase_username }} -v -P
+
+- name: Write recovery.conf file
+  template:
+      src: recovery.conf.j2
+      dest: {{ pgbase_output_dir }}/recovery.conf
+      user: postgres
+      group: postgres
+      mode: 600 
+  notify: start_postgres
+  when: pgbase_create_recovery_file
