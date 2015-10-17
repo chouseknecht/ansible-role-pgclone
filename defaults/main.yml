@@ -9,3 +9,5 @@ pgbase_connect_port: 5432
 pgbase_connect_user: ""
 pgbase_connect_pass: ""
 pgbase_trigger_file: ""
+pgbase_backup_dir: ""
+pgbase_save_files: []

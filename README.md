@@ -34,6 +34,10 @@ pgbase_connect_pass - Password for standby mode connection.
 
 pgbase_trigger_file - Path of trigger file used to end recover in standby mode.
 
+pgbase_backup_dir - Path where backup files will be kept. 
+
+pgbase_save_files - Array of files to backup prior to starting the backup process. 
+
 
 Dependencies
 ------------
@@ -59,4 +63,5 @@ Author Information
 ------------------
 
 Chris Houseknecht
+
 chouseknecht at ansible.com
