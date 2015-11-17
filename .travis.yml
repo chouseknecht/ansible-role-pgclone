@@ -3,13 +3,10 @@ language: python
 python: "2.7"
 
 # Install ansible
-addons:
-  apt:
-    packages:
-    - python-pip 
+before_install:
+  - sudo apt-get update -qq
 
 install:
-  # Install ansible
   - pip install ansible
 
   # Check ansible version
