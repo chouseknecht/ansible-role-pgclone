@@ -1,7 +1,7 @@
 ---
 # Inspired by http://www.rassoc.com/gregr/weblog/2013/02/16/zero-to-postgresql-streaming-replication-in-10-mins/
 
-- name: Stop postgresql service
+name: Stop postgresql service
   service:  name={{ pgbase_service_name }} state=stopped  
 
 - name: Check if the output directory exists 
