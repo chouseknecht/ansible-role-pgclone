@@ -20,4 +20,4 @@ script:
   - ansible-playbook tests/test.yml -i tests/inventory --syntax-check
 
 notifications:
-  webhooks: http://45.79.158.144:8080/api/v1/notifications/
+  webhooks: http://galaxy-qa.ansible.com/api/v1/notifications/
