@@ -3,40 +3,47 @@
 pgclone
 =======
 
-Use pgclone to clone a PostgreSQL cluster from a remote host. Optionally create a recovery.conf and 
-put the clone in standby mode.
+Clone a PostgreSQL cluster from a remote host. Optionally creates a recovery.conf and puts the clone in standby mode.
 
 
 Requirements
 ------------
 
-Requires a running PostgreSQL cluster and assumes PostgreSQL is installed on the target host.
+Requires a running PostgreSQL cluster, and assumes PostgreSQL was previously installed on the target host.
 
 
 Role Variables
 --------------
 
-pgbase_output_dir - Directory to wite the output to. Existing contents will be destroyed.
+pgbase_output_dir: /var/lib/pgsql/data
+> Directory to wite the output to. Existing contents will be destroyed.
 
-pgbase_service_name - Name of the systemd postgresql service, typically "postgresql".
+pgbase_create_recovery_file: yes
+> Indicate whether or not to create recovery.conf file.
 
-pgbase_create_recover_file - True, if recovery.conf should be created.
+pgbase_standby_mode: off
+> Set to 'on', if the clone will be started as a standby.
 
-pgbase_standby_mode - Set to 'on', if the clone will be started as a standby.
+pgbase_connect_host: ''
+> Name or IP address the primary database host.
 
-pgbase_connect_host - Name or IP address the primary database host.
+pgbase_connect_port: 5432
+> Connection port on the remote or masterdatabase host.
 
-pgbase_connect_port - Connection port on the primary database host.
+pgbase_connect_user: ''
+> Username to use when connecting to the remote or master database. 
 
-pgbase_connect_user - PostgreSQL username to use when connecting to the primary database. 
+pgbase_connect_pass: ''
+> Password for connecting to the remote or master database.
 
-pgbase_connect_pass - Password for connecting to the primary database.
+pgbase_trigger_file: /tmp/trigger
+> Sets the trigger_file path in recovery.conf. When a trigger file is detected, the secondary database exits standby mode, and switches to normal operation.
 
-pgbase_trigger_file - Path of trigger file used to end recover in standby mode.
+pgbase_backup_dir: /tmp
+> Path where backup files will be placed. 
 
-pgbase_backup_dir - Path where backup files will be kept. 
-
-pgbase_save_files - Array of files to backup prior to starting the backup process. 
+pgbase_save_files: []
+> List of files to backup before starting the backup process and removing pgbase_output_dir.
 
 
 Dependencies
@@ -47,25 +54,31 @@ None.
 
 Example Playbook
 ----------------
-A simple playbook would be: 
 
-    - hosts: servers
-      roles:
-          - { role: chouseknecht.pg_basebackup }
+- name: Clone the master database to the slave 
+  hosts: secondary-db-host  
+  become: yes
+  vars:
+  roles:
+    - role: chouseknecht.pgclone 
+      pgbase_output_dir: /var/lib/pgsql/data
+      pgbase_backup_dir: /tmp
 
-However, most fo the variables do not have default values, as many of them are project specific things like username and password. It might be best to store these items using vault. Nonsecure items could be placed in playbook vars or in a separate vars file. So your playbook might look more like this:
+      # Recovery file options
+      pgbase_create_recovery_file: True
+      pgbase_standby_mode: "on"
+      pgbase_trigger_file: "/tmp/trigger"
 
-   - hosts: servers
-     vars:
-         pgbase_trigger_file: "foo" 
-         pgbase_connect_port: 5432
-         pgbase_connect_host: 1.2.3.4
-         pgbase_standby_mode: "on"
-         pgbase_create_recover_file: True
-     vars_files:
-         - project-vault.yml
-     roles:
-         - { role: chouseknecht.pg_basebackup }
+      # The remote host with the database we want to copy
+      pgbase_connect_host: "{{ master_ip }}" 
+      pgbase_connect_port: 5432
+      pgbase_connect_user: "{{ replicator_user }}" 
+      pgbase_connect_pass: "{{ replicator_pass }}" 
+
+      # The data directory will be removed. Add to the list any files that should be saved. 
+      pgbase_save_files:
+      - pg_hba.conf
+      - postgresql.conf
 
 License
 -------
@@ -75,6 +88,4 @@ MIT
 Author Information
 ------------------
 
-Chris Houseknecht
-
-chouseknecht at ansible.com
+[@chouseknecht](https://github.com/chouseknecht)
